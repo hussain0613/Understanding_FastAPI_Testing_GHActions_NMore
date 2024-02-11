@@ -9,5 +9,6 @@ jobs:
         steps:
             - run: mkdir -p ~/.ssh
             - run: echo "${{ secrets.SAVDO_DO_SSH_KEY }}" > ~/.ssh/id_rsa
+            - run: chmod 600 ~/.ssh/id_rsa
             - run: ssh -o StrictHostKeyChecking=no ${{ secrets.SAVDO_DO_SSH_USER}}@${{ secrets.SAVDO_DO_IP}} "cd ${{ secrets.SAVDO_DO_REPO_PATH }} && git pull origin main"
             - run: echo "Deployed Successfully!"
