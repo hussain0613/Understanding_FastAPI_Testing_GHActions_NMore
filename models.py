@@ -6,7 +6,7 @@ class Base(DeclarativeBase):
 
 class Item(Base):
     __tablename__ = "items"
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(unique=True, index=True)
     description: Mapped[str]
     price: Mapped[float]
 
