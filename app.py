@@ -1,17 +1,18 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.engine import Engine
 
 from models import Item
 from schemas import ItemBase, ItemResponse, ItemsResponse
-from init_db import engine
+from settings import Settings
+from dependencies import get_db_engine, get_db_engine_factory
 
-app = FastAPI()
+router = APIRouter()
 
 
-
-@app.post("/items/")
-async def create_item(item: ItemBase) -> ItemResponse:
+@router.post("/items/", status_code=201)
+async def create_item(item: ItemBase, engine: Engine = Depends(get_db_engine)) -> ItemResponse:
     with Session(engine) as session:
         db_item = Item(**item.model_dump())
         session.add(db_item)
@@ -25,8 +26,8 @@ async def create_item(item: ItemBase) -> ItemResponse:
         return ItemResponse.model_validate(db_item, from_attributes=True)
 
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: int) -> ItemResponse:
+@router.get("/items/{item_id}")
+async def read_item(item_id: int, engine: Engine = Depends(get_db_engine)) -> ItemResponse:
     with Session(engine) as session:
         item = session.query(Item).filter(Item.id == item_id).first()
         if item is None:
@@ -34,8 +35,8 @@ async def read_item(item_id: int) -> ItemResponse:
         return ItemResponse.model_validate(item, from_attributes=True)
 
 
-@app.get("/items/")
-async def read_items(skip: int = 0, limit: int = None) -> ItemsResponse:
+@router.get("/items/")
+async def read_items(skip: int = 0, limit: int = None, engine: Engine = Depends(get_db_engine)) -> ItemsResponse:
     with Session(engine) as session:
         items_query = session.query(Item)
         items_count = items_query.count()
@@ -45,5 +46,11 @@ async def read_items(skip: int = 0, limit: int = None) -> ItemsResponse:
         return ItemsResponse(items=items_responses, total_length=items_count)
 
 
+
+def app_factory(settings: Settings, router: APIRouter = router) -> FastAPI:
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[get_db_engine] = get_db_engine_factory(settings)
+    return app
 
 
