@@ -1,0 +1,11 @@
+name: Deploy on DigitalOcean Droplet
+on:
+    push: 
+        branches: [main]
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - run: ssh ${{ secrets.SAVDO_DO_SSH_USER}}@${{ secrets.SAVDO_DO_IP}} "cd ${{ secrets.SAVDO_DO_REPO_PATH }} && git pull origin main"
+            - run: echo "Deployed Successfully!"
