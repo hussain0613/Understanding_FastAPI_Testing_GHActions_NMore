@@ -1,0 +1,13 @@
+name: learning-github-actions # This is the name of the workflow [optional]
+run-name: ${{ github.actor }} is learning GitHub Actions # This is the name of the 'run' [optional]
+on: [push] # This is the event that triggers the workflow
+jobs: # Collection of jobs
+    test-app: # This is the name of the job
+        runs-on: ubuntu-latest # This is the environment the job runs on
+        steps: # Collection of steps in the job
+            - uses: actions/checkout@v4 # This is the action that checks out the repository
+            - uses: actions/setup-python@v5 # This is the action that sets up Python
+              with: 
+                python-version: 3.11 # This is the version of Python to use
+            - run: pip install -r requirements.txt # This is the command to install the dependencies
+            - run: pytest -vv # This is the command to run the tests
